@@ -1,0 +1,59 @@
+version: '3.8' # Or a newer version
+
+services:
+  # PHP Application Service
+  app:
+    build:
+      context: . # Specifies the Dockerfile is in the current directory
+      dockerfile: Dockerfile
+    container_name: my_php_app
+    ports:
+      - "8080:80" # Map host port 8080 to container port 80
+    volumes:
+      - ./api:/var/www/html # Mount your local 'src' directory to the container's web root for development
+                            # For production, you might prefer to rely on the COPY in Dockerfile
+    depends_on:
+      - db # Ensures the database service starts before the app service
+    networks:
+      - app-network
+
+  # Database Service (MySQL example)
+  db:
+    image: mysql:8.0 # Or mariadb:latest, adjust version as needed
+    container_name: my_mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'
+      MYSQL_DATABASE: 'mydatabase'
+    ports:
+      - "3306:3306" # Map host port 3306 to container port 3306
+    volumes:
+      - db_data:/var/lib/mysql # Persist database data
+      # Optional: To import your SQL dump on initial setup:
+      - ./mydatabase.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - app-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest # Uses the official phpMyAdmin image [2][3][5]
+    container_name: my_phpmyadmin_app
+    restart: always
+    ports:
+      - "8081:80" # Access phpMyAdmin on host port 8081, container runs on 80 [1][4][5]
+    environment:
+      PMA_HOST: db                # Tells phpMyAdmin to connect to the 'db' service [1][3][4][5]
+      PMA_PORT: 3306              # MySQL port (optional if default 3306) [5]
+      MYSQL_ROOT_PASSWORD: 'root' # You might need this if PMA_HOST alone isn't enough for login prefill,
+                                     # or if you want phpMyAdmin to attempt login as root.
+                                     # However, usually, you log in via the phpMyAdmin web interface.
+    depends_on:
+      - db                        # Ensures 'db' service starts before phpMyAdmin [1][3]
+    networks:
+      - app-network               # Connect to the same network as your app and db
+
+volumes:
+  db_data: # Defines a named volume for persistent database storage
+
+networks:
+  app-network:
+    driver: bridge
