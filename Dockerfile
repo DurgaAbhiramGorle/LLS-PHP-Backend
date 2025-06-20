@@ -17,6 +17,8 @@ RUN apt-get update && \
     apt-get install -y zip unzip git libzip-dev && \
     docker-php-ext-install zip
 
+RUN docker-php-ext-install session
+
 
 
 # You might need other extensions depending on your project (e.g., gd, zip)

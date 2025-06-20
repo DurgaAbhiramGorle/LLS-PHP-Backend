@@ -10,14 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/jwt_auth.php';
+require_once __DIR__ . '/session_auth.php'; //session authentication
+
+requireLogin(); // Require login for this endpoint
+
 require_once __DIR__ . '/connection.php';
 
-// Authenticate and get user info from JWT
-$decoded = authenticateJWT();
 
-// Use email from JWT
-$email = $decoded->email;
+$email = getCurrentUserEmail();
 
 $sql = "SELECT up.*, cs.section_code, cs.title, cs.part_id FROM user_progress up 
         JOIN course_sections cs ON up.section_id = cs.id 

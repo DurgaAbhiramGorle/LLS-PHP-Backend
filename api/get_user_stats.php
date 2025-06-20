@@ -13,16 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/jwt_auth.php';
+require_once __DIR__ . '/session_auth.php'; 
+
+
 require_once __DIR__ . '/connection.php';
 
-// Authenticate and get user info from JWT
-$decoded = authenticateJWT();
-if (!$decoded) {
-    http_response_code(401); // Unauthorized
-    echo json_encode(["error" => "Unauthorized access. Invalid or missing JWT."]);
-    exit;
-}
+// Use email from session
+$email = getCurrentUserEmail();
 
 $sql = "SELECT DATE(created_at) as date, COUNT(*) as count 
             FROM users 
@@ -35,8 +32,7 @@ $stmt->execute();
 // Fetch all results. Each row will be an associative array, e.g., ['date' => '2023-01-15', 'count' => 5]
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// The React component expects the count to be a number.
-// PDO might return string representations of numbers depending on the driver/configuration.
+
 // Explicitly cast 'count' to an integer.
 $formattedResultsNewUsers = array_map(function($row) {
     return [
@@ -74,7 +70,7 @@ $response = [
 ];
 
 // Send the JSON response
-http_response_code(200); // OK
+http_response_code(200);
 echo json_encode($response);
 
 

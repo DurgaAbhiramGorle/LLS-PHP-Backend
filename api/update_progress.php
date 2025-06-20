@@ -10,13 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-require_once __DIR__ . '/jwt_auth.php';
+require_once __DIR__ . '/session_auth.php'; // session authentication
+
+requireLogin(); // Require login for this endpoint
+
 require_once __DIR__ . '/connection.php';
 
-// Authenticate and get user info from JWT
-$decoded = authenticateJWT();
-
-$email = $decoded->email;
+// Use email from session
+$email = getCurrentUserEmail();
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input || !isset($input['section_code'], $input['complete'])) {
     http_response_code(400);
