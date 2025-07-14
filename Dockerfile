@@ -29,9 +29,11 @@ RUN docker-php-ext-install session
 # Enable Apache mods like rewrite (if needed)
 RUN a2enmod rewrite
 
+RUN sed -i 's/80/${PORT}/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+
 # Copy your PHP application code into the container's web root
 # Adjust 'src/' if your PHP files are in a different directory (e.g., 'public/', './')
 COPY ./api/ /var/www/html/
 
 # Expose port 80 (Apache's default port)
-EXPOSE 80
+EXPOSE 8080
